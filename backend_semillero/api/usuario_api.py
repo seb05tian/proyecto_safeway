@@ -3,6 +3,7 @@ from config.db import db
 from models.usuario import Usuario, UsuarioSchema
 from models.cliente import Cliente
 from models.administrador import Administrador
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api_usuario = Blueprint('api_usuario', __name__)
 usuario_schema = UsuarioSchema()
