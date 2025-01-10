@@ -44,20 +44,18 @@ def create_usuario():
         return jsonify({'error': 'Error al crear el usuario'}), 500
 
 
-# READ ALL
-# READ ALL
 @api_usuario.route('/usuarios', methods=['GET'])
 def get_usuarios():
     usuarios = Usuario.query.all()
     return usuarios_schema.jsonify(usuarios)
 
-# READ ONE
+
 @api_usuario.route('/usuarios/<int:id_usuario>', methods=['GET'])
 def get_usuario(id_usuario):
     usuario = Usuario.query.get_or_404(id_usuario)
     return usuario_schema.jsonify(usuario)
 
-# UPDATE
+
 @api_usuario.route('/usuarios/update/<int:id_usuario>', methods=['PUT'])
 def update_usuario(id_usuario):
     data = request.json
@@ -77,7 +75,7 @@ def update_usuario(id_usuario):
         db.session.rollback()
         return jsonify({'error': 'Error al actualizar el usuario'}), 500
 
-# DELETE
+
 @api_usuario.route('/usuarios/delete/<int:id_usuario>', methods=['DELETE'])
 def delete_usuario(id_usuario):
     usuario = Usuario.query.get_or_404(id_usuario)
