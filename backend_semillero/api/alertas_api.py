@@ -43,7 +43,7 @@ def update_alerta(id):
     db.session.commit()
     return alerta_schema.jsonify(alerta)
 
-@api_alertas.route('/alertas/delete<int:id>', methods=['DELETE'])
+@api_alertas.route('/alertas/delete/<int:id>', methods=['DELETE'])
 def delete_alerta(id):
     alerta = Alertas.query.get(id)
     db.session.delete(alerta)
