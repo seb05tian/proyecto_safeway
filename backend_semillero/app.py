@@ -33,8 +33,8 @@ def index():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    identificador = data.get('identificador', None)  # Esto debe coincidir con el frontend
-    contrasena = data.get('contrasena', None)  # Esto debe coincidir con el frontend
+    identificador = data.get('identificador', None) 
+    contrasena = data.get('contrasena', None)
 
     usuario = Usuario.query.filter(
         (Usuario.nombre == identificador) | 
@@ -43,9 +43,16 @@ def login():
 
     if usuario and usuario.contrasena == contrasena:
         access_token = create_access_token(identity=usuario.id_usuario)
-        return jsonify(access_token=access_token), 200
+        return jsonify(
+            access_token=access_token,
+            role=usuario.rol,
+            nombre=usuario.nombre,
+            id=usuario.id_usuario,
+            correo=usuario.correo_electronico
+        ), 200
     else:
         return jsonify({"msg": "Credenciales incorrectas"}), 401
+
 
 @app.route('/register', methods=['POST'])
 def register():

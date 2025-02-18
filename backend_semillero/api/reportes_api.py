@@ -58,9 +58,9 @@ def delete_reporte(id_reporte):
 
 @api_reportes.route('/reportes/historial', methods=['GET'])
 def obtener_historial():
-    id_usuario = request.args.get('id_usuario')  # Debes obtener el ID del usuario desde la sesión o autenticación
+    id_usuario = request.args.get('id_usuario')  
     
-    # Obtener los reportes hechos por este usuario
+   
     reportes = Reportes.query.filter_by(id_usuario=id_usuario).all()
     
     if not reportes:
@@ -71,9 +71,9 @@ def obtener_historial():
 
 @api_reportes.route('/reportes/notificaciones', methods=['GET'])
 def obtener_notificaciones():
-    id_usuario = request.args.get('id_usuario')  # ID del usuario en sesión
+    id_usuario = request.args.get('id_usuario') 
     
-    # Obtener reportes hechos por otros usuarios
+
     reportes = Reportes.query.filter(Reportes.id_usuario != id_usuario).all()
     
     if not reportes:
