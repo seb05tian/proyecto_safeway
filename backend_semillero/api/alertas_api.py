@@ -6,7 +6,7 @@ api_alertas = Blueprint('api_alertas', __name__)
 alerta_schema = AlertasSchema()
 alertas_schema = AlertasSchema(many=True)
 
-@api_alertas.route('/alertas', methods=['POST'])
+@api_alertas.route('/alertas/create', methods=['POST'])
 def create_alerta():
     descripcion = request.json['descripcion']
     ubicacion = request.json['ubicacion']
@@ -28,7 +28,7 @@ def get_alerta(id):
     alerta = Alertas.query.get(id)
     return alerta_schema.jsonify(alerta)
 
-@api_alertas.route('/alertas/<int:id>', methods=['PUT'])
+@api_alertas.route('/alertas/update/<int:id>', methods=['PUT'])
 def update_alerta(id):
     alerta = Alertas.query.get(id)
 
@@ -43,7 +43,7 @@ def update_alerta(id):
     db.session.commit()
     return alerta_schema.jsonify(alerta)
 
-@api_alertas.route('/alertas/<int:id>', methods=['DELETE'])
+@api_alertas.route('/alertas/delete/<int:id>', methods=['DELETE'])
 def delete_alerta(id):
     alerta = Alertas.query.get(id)
     db.session.delete(alerta)

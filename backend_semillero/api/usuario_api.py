@@ -3,6 +3,7 @@ from config.db import db
 from models.usuario import Usuario, UsuarioSchema
 from models.cliente import Cliente
 from models.administrador import Administrador
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api_usuario = Blueprint('api_usuario', __name__)
 usuario_schema = UsuarioSchema()
@@ -44,20 +45,18 @@ def create_usuario():
         return jsonify({'error': 'Error al crear el usuario'}), 500
 
 
-# READ ALL
-# READ ALL
 @api_usuario.route('/usuarios', methods=['GET'])
 def get_usuarios():
     usuarios = Usuario.query.all()
     return usuarios_schema.jsonify(usuarios)
 
-# READ ONE
+
 @api_usuario.route('/usuarios/<int:id_usuario>', methods=['GET'])
 def get_usuario(id_usuario):
     usuario = Usuario.query.get_or_404(id_usuario)
     return usuario_schema.jsonify(usuario)
 
-# UPDATE
+
 @api_usuario.route('/usuarios/update/<int:id_usuario>', methods=['PUT'])
 def update_usuario(id_usuario):
     data = request.json
@@ -77,10 +76,27 @@ def update_usuario(id_usuario):
         db.session.rollback()
         return jsonify({'error': 'Error al actualizar el usuario'}), 500
 
-# DELETE
+
 @api_usuario.route('/usuarios/delete/<int:id_usuario>', methods=['DELETE'])
 def delete_usuario(id_usuario):
     usuario = Usuario.query.get_or_404(id_usuario)
     db.session.delete(usuario)
     db.session.commit()
     return jsonify({'message': 'Usuario eliminado'}), 204
+
+
+@api_usuario.route('/usuarios/logged_user', methods=['GET'])
+@jwt_required()
+def get_logged_user():
+    try:
+        id_usuario_logueado = get_jwt_identity()
+        usuario = Usuario.query.get_or_404(id_usuario_logueado)
+        cliente = Cliente.query.filter_by(id_usuario=id_usuario_logueado).first()
+
+        return jsonify({
+            'nombre': usuario.nombre,
+            'correo_electronico': usuario.correo_electronico,
+            'telefono': cliente.telefono if cliente else None
+        }), 200
+    except Exception as e:
+        return jsonify({'error': 'Error al obtener los datos del usuario logueado'}), 500
