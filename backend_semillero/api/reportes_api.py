@@ -81,3 +81,16 @@ def obtener_notificaciones():
     
     return reportes_schema.jsonify(reportes), 200
 
+@api_reportes.route('/reportes/paginated', methods=['GET'])
+def get_reportes_paginated():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    pagination = Reportes.query.paginate(page=page, per_page=per_page, error_out=False)
+    reportes = pagination.items
+    return jsonify({
+        "page": page,
+        "per_page": per_page,
+        "total": pagination.total,
+        "pages": pagination.pages,
+        "reportes": reportes_schema.dump(reportes)
+    }), 200
