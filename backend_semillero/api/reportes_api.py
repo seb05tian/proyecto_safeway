@@ -49,33 +49,35 @@ def delete_reporte(id_reporte):
     db.session.commit()
     return jsonify({'message': 'Reporte eliminado'}), 204
 
-@api_reportes.route('/reportes/historial', methods=['GET'])
+@api_reportes.route('/reportes/historial/paginated', methods=['GET'])
 @jwt_required()
-def obtener_historial():
-    id_usuario = get_jwt_identity()
-    reportes = Reportes.query.filter_by(id_usuario=id_usuario).all()
-    if not reportes:
-        return jsonify({'message': 'No hay reportes para este usuario'}), 200
-    return reportes_schema.jsonify(reportes), 200
-
-@api_reportes.route('/reportes/notificaciones', methods=['GET'])
-def obtener_notificaciones():
-    id_usuario = request.args.get('id_usuario')
-    reportes = Reportes.query.filter(Reportes.id_usuario != id_usuario).all()
-    if not reportes:
-        return jsonify({'message': 'No hay reportes de otros usuarios'}), 404
-    return reportes_schema.jsonify(reportes), 200
-
-@api_reportes.route('/reportes/paginated', methods=['GET'])
-def get_reportes_paginated():
+def get_historial_paginated():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
-    pagination = Reportes.query.paginate(page=page, per_page=per_page, error_out=False)
+    id_usuario = get_jwt_identity()
+    pagination = Reportes.query.filter_by(id_usuario=id_usuario).paginate(page=page, per_page=per_page, error_out=False)
     reportes = pagination.items
     return jsonify({
         "page": page,
         "per_page": per_page,
         "total": pagination.total,
         "pages": pagination.pages,
+        "nextPage": pagination.has_next,
+        "reportes": reportes_schema.dump(reportes)
+    }), 200
+
+@api_reportes.route('/reportes/notificaciones/paginated', methods=['GET'])
+def get_notificaciones_paginated():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    id_usuario = request.args.get('id_usuario')
+    pagination = Reportes.query.filter(Reportes.id_usuario != id_usuario).paginate(page=page, per_page=per_page, error_out=False)
+    reportes = pagination.items
+    return jsonify({
+        "page": page,
+        "per_page": per_page,
+        "total": pagination.total,
+        "pages": pagination.pages,
+        "nextPage": pagination.has_next,
         "reportes": reportes_schema.dump(reportes)
     }), 200
