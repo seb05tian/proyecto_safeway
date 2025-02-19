@@ -63,7 +63,7 @@ def register():
     nuevo_usuario = Usuario(
         nombre=data['name'],
         correo_electronico=data['email'],
-        contrasena=data['password'],  # Considera hashear esta contraseña
+        contrasena=data['password'],  
         rol='cliente'
     )
     
