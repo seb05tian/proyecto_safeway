@@ -8,16 +8,18 @@ from api.alertas_api import api_alertas
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from models.usuario import Usuario, UsuarioSchema
+from datetime import timedelta
 app = Flask(__name__)
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root@localhost/semillero_vias"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "semillero_vias"
 app.config['JWT_SECRET_KEY'] = 'administradorjwt'  
+
 jwt = JWTManager(app)
 db.init_app(app)
 ma.init_app(app)
-
+access_token = create_access_token(identity=Usuario.id_usuario, expires_delta=timedelta(days=2))
 # Registrar los Blueprints
 app.register_blueprint(api_usuario)
 app.register_blueprint(api_cliente)
