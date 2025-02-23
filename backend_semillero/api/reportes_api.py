@@ -15,7 +15,8 @@ def create_reporte():
         imagen=data.get('imagen'),
         ubicacion=data.get('ubicacion'),
         id_usuario=data.get('id_usuario'),
-        coordenadas=data.get('coordenadas', '')
+        latitud=data.get('latitud'),
+        longitud=data.get('longitud')
     )
     db.session.add(new_reporte)
     db.session.commit()
@@ -38,7 +39,8 @@ def update_reporte(id_reporte):
     reporte.descripcion = data.get('descripcion', reporte.descripcion)
     reporte.imagen = data.get('imagen', reporte.imagen)
     reporte.ubicacion = data.get('ubicacion', reporte.ubicacion)
-    reporte.coordenadas = data.get('coordenadas', reporte.coordenadas)
+    reporte.latitud = data.get('latitud', reporte.latitud)
+    reporte.longitud = data.get('longitud', reporte.longitud)
     db.session.commit()
     return reporte_schema.jsonify(reporte)
 

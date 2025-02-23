@@ -9,17 +9,20 @@ class Reportes(db.Model):
     fecha_hora = db.Column(db.DateTime, default=datetime.utcnow)
     ubicacion = db.Column(db.String(255))
     id_usuario = db.Column(db.Integer, db.ForeignKey('Usuarios.id_usuario'))
-    coordenadas = db.Column(db.String(100))  
+    latitud = db.Column(db.Float)
+    longitud = db.Column(db.Float)
 
-    def __init__(self, descripcion, imagen, ubicacion, id_usuario, coordenadas=''):
+    def __init__(self, descripcion, imagen, ubicacion, id_usuario, latitud, longitud):
         self.descripcion = descripcion
         self.imagen = imagen
         self.ubicacion = ubicacion
         self.id_usuario = id_usuario
-        self.coordenadas = coordenadas
+        self.latitud = latitud
+        self.longitud = longitud
 
 class ReportesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Reportes
-        fields = ('id_reporte', 'descripcion', 'imagen', 'fecha_hora', 'ubicacion', 'id_usuario', 'coordenadas')
+        fields = ('id_reporte', 'descripcion', 'imagen', 'fecha_hora', 'ubicacion', 'id_usuario', 'latitud', 'longitud')
+
 
