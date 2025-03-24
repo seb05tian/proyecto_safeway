@@ -1,14 +1,18 @@
 from flask import Flask, jsonify, request
-from config.db import db, ma
+from config.db import db, ma, app
 from api.usuario_api import api_usuario
-from api.cliente_api import api_cliente
 from api.administrador_api import api_administrador
 from api.reportes_api import api_reportes
-from api.alertas_api import api_alertas
+from api.mensaje_api import api_mensajes
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
-from models.usuario import Usuario, UsuarioSchema
 from datetime import timedelta
+
+from models.usuario import Usuario, UsuarioSchema  
+from models.mensajes import Mensaje, MensajesSchema
+
+
+
 app = Flask(__name__)
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root@localhost/semillero_vias"
@@ -19,12 +23,14 @@ jwt = JWTManager(app)
 db.init_app(app)
 ma.init_app(app)
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=2)
-# Registrar los Blueprints
+
+
+
+
 app.register_blueprint(api_usuario)
-app.register_blueprint(api_cliente)
 app.register_blueprint(api_administrador)
 app.register_blueprint(api_reportes)
-app.register_blueprint(api_alertas)
+app.register_blueprint(api_mensajes)
 
 
 @app.route('/')
@@ -46,7 +52,6 @@ def login():
         access_token = create_access_token(identity=usuario.id_usuario)
         return jsonify(
             access_token=access_token,
-            role=usuario.rol,
             nombre=usuario.nombre,
             id=usuario.id_usuario,
             correo=usuario.correo_electronico
@@ -65,7 +70,7 @@ def register():
         nombre=data['name'],
         correo_electronico=data['email'],
         contrasena=data['password'],  
-        rol='cliente'
+        
     )
     
     db.session.add(nuevo_usuario)
@@ -74,5 +79,8 @@ def register():
     return jsonify({'message': 'Usuario registrado exitosamente'}), 201
 
 
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+        

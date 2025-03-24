@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 from config.db import db
 from models.usuario import Usuario, UsuarioSchema
-from models.cliente import Cliente
 from models.administrador import Administrador
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -24,17 +23,6 @@ def create_usuario():
         db.session.add(new_usuario)
         db.session.commit()
 
-       
-        direccion = data.get('direccion', None)
-        telefono = data.get('telefono', None)
-        new_cliente = Cliente(
-            direccion=direccion,
-            telefono=telefono,
-            id_usuario=new_usuario.id_usuario
-        )
-        db.session.add(new_cliente)
-
-        db.session.commit()
         
         return usuario_schema.jsonify(new_usuario), 201
 
@@ -91,12 +79,12 @@ def get_logged_user():
     try:
         id_usuario_logueado = get_jwt_identity()
         usuario = Usuario.query.get_or_404(id_usuario_logueado)
-        cliente = Cliente.query.filter_by(id_usuario=id_usuario_logueado).first()
+        
 
         return jsonify({
             'nombre': usuario.nombre,
             'correo_electronico': usuario.correo_electronico,
-            'telefono': cliente.telefono if cliente else None
+            
         }), 200
     except Exception as e:
         return jsonify({'error': 'Error al obtener los datos del usuario logueado'}), 500

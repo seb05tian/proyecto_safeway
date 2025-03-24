@@ -1,4 +1,4 @@
-from config.db import db, ma
+from config.db import app, db, ma
 from datetime import datetime
 
 class Reportes(db.Model):
@@ -20,6 +20,8 @@ class Reportes(db.Model):
         self.latitud = latitud
         self.longitud = longitud
 
+with app.app_context():
+    db.create_all()
 class ReportesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Reportes

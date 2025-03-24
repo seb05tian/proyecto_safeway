@@ -1,4 +1,5 @@
-from config.db import app, db, ma
+from config.db import  app, db, ma
+
 
 class Usuario(db.Model):
     __tablename__ = 'Usuarios'
@@ -6,19 +7,21 @@ class Usuario(db.Model):
     nombre = db.Column(db.String(100))
     correo_electronico = db.Column(db.String(100), unique=True)
     contrasena = db.Column(db.String(100))
-    rol = db.Column(db.String(50), default='cliente')  
+    
 
-    def __init__(self, nombre, correo_electronico, contrasena, rol):
+    def __init__(self, nombre, correo_electronico, contrasena):
         self.nombre = nombre
         self.correo_electronico = correo_electronico
         self.contrasena = contrasena
-        self.rol = rol 
+        
+
 
 with app.app_context():
     db.create_all()
 
+
 class UsuarioSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Usuario
-        fields = ('id_usuario', 'nombre', 'correo_electronico', 'contrasena', 'rol')
+        fields = ('id_usuario', 'nombre', 'correo_electronico', 'contrasena')
 
