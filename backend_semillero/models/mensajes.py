@@ -15,8 +15,6 @@ class Mensaje(db.Model):
         self.id_usuario = id_usuario
         self.descripcion = descripcion
 
-with app.app_context():
-    db.create_all()
 
 class MensajesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

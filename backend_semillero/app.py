@@ -10,8 +10,11 @@ from datetime import timedelta
 
 from models.usuario import Usuario, UsuarioSchema  
 from models.mensajes import Mensaje, MensajesSchema
+from models.administrador import Administrador, AdministradorSchema
+from models.reportes import Reportes, ReportesSchema
 
-
+with app.app_context():
+    db.create_all()
 
 app = Flask(__name__)
 CORS(app)

@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from config.db import db
 from models.usuario import Usuario, UsuarioSchema
+
 from models.administrador import Administrador
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -18,11 +19,17 @@ def create_usuario():
             nombre=data['nombre'],
             correo_electronico=data['correo_electronico'],
             contrasena=data['contrasena'],
+            
         )
         
         db.session.add(new_usuario)
         db.session.commit()
 
+       
+       
+       
+
+        db.session.commit()
         
         return usuario_schema.jsonify(new_usuario), 201
 

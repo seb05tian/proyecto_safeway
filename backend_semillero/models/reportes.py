@@ -20,8 +20,6 @@ class Reportes(db.Model):
         self.latitud = latitud
         self.longitud = longitud
 
-with app.app_context():
-    db.create_all()
 class ReportesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Reportes
