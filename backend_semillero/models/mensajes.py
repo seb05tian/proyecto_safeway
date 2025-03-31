@@ -1,7 +1,7 @@
-from config.db import app, db, ma
+from config.db import app, db, ma 
 from datetime import datetime
 from sqlalchemy.sql import func
-
+from models.usuario import Usuario  
 
 class Mensaje(db.Model):
     __tablename__ = 'mensaje'
@@ -19,4 +19,10 @@ class Mensaje(db.Model):
 class MensajesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Mensaje
-    fields = ('id_mensaje', 'id_usuario', 'descripcion', 'fecha')
+        fields = ('id_mensaje', 'id_usuario', 'nombre', 'descripcion', 'fecha')
+
+    nombre = ma.Method("get_nombre")  
+
+    def get_nombre(self, obj):
+        usuario = Usuario.query.get(obj.id_usuario)  
+        return usuario.nombre if usuario else None  

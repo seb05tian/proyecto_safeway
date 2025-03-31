@@ -23,9 +23,12 @@ def crear_mensaje():
     db.session.add(nuevo_mensaje)
     db.session.commit()
 
+    usuario = Usuario.query.get(user_id)  
+
     return jsonify({
         'id_mensaje': nuevo_mensaje.id_mensaje,
         'id_usuario': user_id,
+        'nombre': usuario.nombre if usuario else None,  
         'descripcion': descripcion,
         'fecha': nuevo_mensaje.fecha.strftime("%Y-%m-%d %H:%M:%S") if nuevo_mensaje.fecha else None
     }), 201
@@ -37,6 +40,7 @@ def obtener_mensajes():
     return jsonify([{
         'id_mensaje': mensaje.id_mensaje,
         'id_usuario': mensaje.id_usuario,
+        'nombre': Usuario.query.get(mensaje.id_usuario).nombre if Usuario.query.get(mensaje.id_usuario) else None,  # Agregado el nombre
         'descripcion': mensaje.descripcion,
         'fecha': mensaje.fecha.strftime("%Y-%m-%d %H:%M:%S") if mensaje.fecha else None
     } for mensaje in mensajes])
@@ -47,9 +51,13 @@ def obtener_mensaje(id_mensaje):
     mensaje = Mensaje.query.get(id_mensaje)
     if not mensaje:
         return jsonify({'error': 'Mensaje no encontrado'}), 404
+
+    usuario = Usuario.query.get(mensaje.id_usuario)  
+
     return jsonify({
         'id_mensaje': mensaje.id_mensaje,
         'id_usuario': mensaje.id_usuario,
+        'nombre': usuario.nombre if usuario else None,  
         'descripcion': mensaje.descripcion,
         'fecha': mensaje.fecha.strftime("%Y-%m-%d %H:%M:%S") if mensaje.fecha else None
     })
@@ -64,18 +72,17 @@ def eliminar_mensaje(id_mensaje):
 
     user_id = get_jwt_identity()
 
-    
     usuario = Usuario.query.get(user_id)  
     if not usuario:
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    
     if mensaje.id_usuario != user_id and usuario.rol != 'administrador':
         return jsonify({'error': 'No tienes permiso para eliminar este mensaje'}), 403
 
     db.session.delete(mensaje)
     db.session.commit()
     return jsonify({'mensaje': 'Mensaje eliminado correctamente'}), 200
+
 
 @api_mensajes.route('/mensajes/update/<int:id_mensaje>', methods=['PUT'])
 @jwt_required()
@@ -96,9 +103,12 @@ def actualizar_mensaje(id_mensaje):
     mensaje.descripcion = nueva_descripcion
     db.session.commit()
 
+    usuario = Usuario.query.get(mensaje.id_usuario)  
+
     return jsonify({
         'id_mensaje': mensaje.id_mensaje,
         'id_usuario': mensaje.id_usuario,
+        'nombre': usuario.nombre if usuario else None,  
         'descripcion': mensaje.descripcion,
         'fecha': mensaje.fecha.strftime("%Y-%m-%d %H:%M:%S") if mensaje.fecha else None
     }), 200
