@@ -57,7 +57,8 @@ def login():
             access_token=access_token,
             nombre=usuario.nombre,
             id=usuario.id_usuario,
-            correo=usuario.correo_electronico
+            correo=usuario.correo_electronico,
+            rol=usuario.rol
         ), 200
     else:
         return jsonify({"msg": "Credenciales incorrectas"}), 401
