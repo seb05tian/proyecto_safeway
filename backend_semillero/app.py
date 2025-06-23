@@ -1,33 +1,34 @@
 from flask import Flask, jsonify, request
-from config.db import db, ma, app
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager, create_access_token
+from datetime import timedelta
+
+from config.db import db, ma
 from api.usuario_api import api_usuario
 from api.administrador_api import api_administrador
 from api.reportes_api import api_reportes
 from api.mensaje_api import api_mensajes
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_cors import CORS
-from datetime import timedelta
 
-from models.usuario import Usuario, UsuarioSchema  
-from models.mensajes import Mensaje, MensajesSchema
-from models.administrador import Administrador, AdministradorSchema
-from models.reportes import Reportes, ReportesSchema
-
-with app.app_context():
-    db.create_all()
+from models.usuario import Usuario
 
 app = Flask(__name__)
 CORS(app)
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root@localhost/semillero_vias"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "semillero_vias"
-app.config['JWT_SECRET_KEY'] = 'administradorjwt'  
-jwt = JWTManager(app)
-db.init_app(app)
-ma.init_app(app)
+app.config['JWT_SECRET_KEY'] = 'administradorjwt'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=2)
 
 
+db.init_app(app)
+ma.init_app(app)
+jwt = JWTManager(app)
+
+
+with app.app_context():
+    db.create_all()
 
 
 app.register_blueprint(api_usuario)
@@ -43,8 +44,8 @@ def index():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    identificador = data.get('identificador', None) 
-    contrasena = data.get('contrasena', None)
+    identificador = data.get('identificador')
+    contrasena = data.get('contrasena')
 
     usuario = Usuario.query.filter(
         (Usuario.nombre == identificador) | 
@@ -52,17 +53,16 @@ def login():
     ).first()
 
     if usuario and usuario.contrasena == contrasena:
-        access_token = create_access_token(identity=usuario.id_usuario)
+        token = create_access_token(identity=usuario.id_usuario)
         return jsonify(
-            access_token=access_token,
+            access_token=token,
             nombre=usuario.nombre,
             id=usuario.id_usuario,
             correo=usuario.correo_electronico,
             rol=usuario.rol
         ), 200
-    else:
-        return jsonify({"msg": "Credenciales incorrectas"}), 401
 
+    return jsonify({"msg": "Credenciales incorrectas"}), 401
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -73,18 +73,13 @@ def register():
     nuevo_usuario = Usuario(
         nombre=data['name'],
         correo_electronico=data['email'],
-        contrasena=data['password'],  
-        
+        contrasena=data['password']
     )
-    
     db.session.add(nuevo_usuario)
     db.session.commit()
 
     return jsonify({'message': 'Usuario registrado exitosamente'}), 201
 
 
-
-
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
-        
+    app.run(host='0.0.0.0', port=5000, debug=True)
