@@ -24,8 +24,23 @@ def create_reporte():
 
 @api_reportes.route('/reportes', methods=['GET'])
 def get_reportes():
-    reportes = Reportes.query.all()
-    return reportes_schema.jsonify(reportes)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    if page and per_page:
+        pagination = Reportes.query.paginate(page=page, per_page=per_page, error_out=False)
+        reportes = pagination.items
+        return jsonify({
+            "page": page,
+            "per_page": per_page,
+            "total": pagination.total,
+            "pages": pagination.pages,
+            "reportes": reportes_schema.dump(reportes)
+        }), 200
+    else:
+        reportes = Reportes.query.all()
+        return reportes_schema.jsonify(reportes)
+
 
 @api_reportes.route('/reportes/<int:id_reporte>', methods=['GET'])
 def get_reporte(id_reporte):
@@ -72,8 +87,7 @@ def get_historial_paginated():
 def get_notificaciones_paginated():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
-    id_usuario = request.args.get('id_usuario')
-    pagination = Reportes.query.filter(Reportes.id_usuario != id_usuario).paginate(page=page, per_page=per_page, error_out=False)
+    pagination = Reportes.query.paginate(page=page, per_page=per_page, error_out=False)
     reportes = pagination.items
     return jsonify({
         "page": page,
