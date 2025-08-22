@@ -1,8 +1,9 @@
-from flask import Blueprint, jsonify, request
+# api/mensaje_api.py
+from flask import Blueprint, jsonify, request, current_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from config.db import db
 from models.mensajes import Mensaje, MensajesSchema
 from models.usuario import Usuario
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.reportes import Reportes
 api_mensajes = Blueprint('api_mensajes', __name__)
 mensaje_schema = MensajesSchema()
@@ -12,28 +13,60 @@ mensajes_schema = MensajesSchema(many=True)
 @api_mensajes.route('/mensajes/create/<int:id_reporte>', methods=['POST'])
 @jwt_required()
 def crear_mensaje(id_reporte):
-    data = request.get_json()
-    descripcion = data.get('descripcion')
-    user_id = get_jwt_identity()
+    try:
+        data = request.get_json() or {}
+        descripcion = (data.get('descripcion') or '').strip()
+        user_id = get_jwt_identity()
 
-    if not descripcion:
-        return jsonify({'error': 'Falta la descripción'}), 400
+        # Validaciones mínimas
+        if not descripcion:
+            return jsonify({'error': 'Falta la descripción'}), 400
 
-    nuevo_mensaje = Mensaje(id_usuario=user_id, id_reporte=id_reporte, descripcion=descripcion)
-    db.session.add(nuevo_mensaje)
-    db.session.commit()
+        # (Opcional) verifica que el reporte exista
+        reporte = Reportes.query.get(id_reporte)
+        if not reporte:
+            return jsonify({'error': 'Reporte no encontrado'}), 404
 
-    usuario = Usuario.query.get(user_id)
+        # Crea y guarda
+        nuevo_mensaje = Mensaje(
+            id_usuario=user_id,
+            id_reporte=id_reporte,
+            descripcion=descripcion
+        )
+        db.session.add(nuevo_mensaje)
+        db.session.commit()
 
-    return jsonify({
-        'id_mensaje': nuevo_mensaje.id_mensaje,
-        'id_usuario': user_id,
-        'id_reporte': id_reporte,
-        'nombre': usuario.nombre if usuario else None,
-        'descripcion': descripcion,
-        'fecha': nuevo_mensaje.fecha.strftime("%Y-%m-%d %H:%M:%S")
-    }), 201
+        usuario = Usuario.query.get(user_id)
 
+        payload = {
+            'id_mensaje': nuevo_mensaje.id_mensaje,
+            'id_usuario': user_id,
+            'id_reporte': id_reporte,
+            'nombre': usuario.nombre if usuario else None,
+            'descripcion': descripcion,
+            'fecha': nuevo_mensaje.fecha.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        # Emite en tiempo real (no rompas la respuesta si falla el emit)
+        try:
+            socketio = current_app.extensions.get('socketio')
+            if socketio:
+                socketio.emit(
+                    'nuevo_mensaje',
+                    payload,
+                    room=f"reporte:{id_reporte}",
+                    namespace='/chat'
+                )
+        except Exception as e:
+            # Loguea si quieres, pero no interrumpas la respuesta HTTP
+            current_app.logger.warning(f"Socket emit falló: {e}")
+
+        return jsonify(payload), 201
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception("Error creando mensaje")
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 @api_mensajes.route('/mensajes/reporte/<int:id_reporte>', methods=['GET'])
 @jwt_required()
